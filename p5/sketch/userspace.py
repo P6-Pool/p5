@@ -27,7 +27,7 @@ import sys
 import time
 from functools import wraps
 
-from .events import handler_names
+from .events import handler_names, KeyEvent
 
 from ..core import p5
 from ..pmath import matrix
@@ -126,13 +126,63 @@ def setup():
     pass
 
 
+def key_pressed(event):
+    pass
+
+
+def key_released(event):
+    pass
+
+
+def key_typed(event):
+    pass
+
+
+def mouse_clicked(event):
+    pass
+
+
+def mouse_double_clicked(event):
+    pass
+
+
+def mouse_dragged(event):
+    pass
+
+
+def mouse_moved(event):
+    pass
+
+
+def mouse_pressed(event):
+    pass
+
+
+def mouse_released(event):
+    pass
+
+
+def mouse_wheel(event):
+    pass
+
+
 def run(
-    sketch_preload: Optional[Callable] = None,
-    sketch_setup: Optional[Callable] = None,
-    sketch_draw: Optional[Callable] = None,
-    frame_rate: int = 60,
-    mode: str = "P2D",
-    renderer: str = "vispy",
+        sketch_preload: Optional[Callable] = None,
+        sketch_setup: Optional[Callable] = None,
+        sketch_draw: Optional[Callable] = None,
+        sketch_key_pressed: Optional[Callable[[KeyEvent], None]] = None,
+        sketch_key_released: Optional[Callable[[KeyEvent], None]] = None,
+        sketch_key_typed: Optional[Callable[[KeyEvent], None]] = None,
+        sketch_mouse_clicked: Optional[Callable[[KeyEvent], None]] = None,
+        sketch_mouse_double_clicked: Optional[Callable[[KeyEvent], None]] = None,
+        sketch_mouse_dragged: Optional[Callable[[KeyEvent], None]] = None,
+        sketch_mouse_moved: Optional[Callable[[KeyEvent], None]] = None,
+        sketch_mouse_pressed: Optional[Callable[[KeyEvent], None]] = None,
+        sketch_mouse_released: Optional[Callable[[KeyEvent], None]] = None,
+        sketch_mouse_wheel: Optional[Callable[[KeyEvent], None]] = None,
+        frame_rate: int = 60,
+        mode: str = "P2D",
+        renderer: str = "vispy",
 ):
     """Run a sketch.
 
@@ -149,32 +199,30 @@ def run(
     :math:`\geq 1`
 
     """
-    # get the user-defined setup(), draw(), preload() and handler functions.
-    if sketch_preload is not None:
-        preload_method = sketch_preload
-    elif hasattr(__main__, "preload"):
-        preload_method = __main__.preload
-    else:
-        preload_method = preload
 
-    if sketch_setup is not None:
-        setup_method = sketch_setup
-    elif hasattr(__main__, "setup"):
-        setup_method = __main__.setup
-    else:
-        setup_method = setup
+    def get_sketch_method(sketch_function, default_function):
+        if sketch_function is not None:
+            return sketch_function
+        elif hasattr(__main__, default_function.__name__):
+            return getattr(__main__, default_function.__name__)
+        else:
+            return default_function
 
-    if sketch_draw is not None:
-        draw_method = sketch_draw
-    elif hasattr(__main__, "draw"):
-        draw_method = __main__.draw
-    else:
-        draw_method = draw
+    preload_method = get_sketch_method(sketch_preload, preload)
+    setup_method = get_sketch_method(sketch_setup, setup)
+    draw_method = get_sketch_method(sketch_draw, draw)
 
     handlers = {
-        handler: _fix_interface(getattr(__main__, handler))
-        for handler in handler_names
-        if hasattr(__main__, handler)
+        "key_pressed": get_sketch_method(sketch_key_pressed, key_pressed),
+        "key_released": get_sketch_method(sketch_key_released, key_released),
+        "key_typed": get_sketch_method(sketch_key_typed, key_typed),
+        "mouse_clicked": get_sketch_method(sketch_mouse_clicked, mouse_clicked),
+        "mouse_double_clicked": get_sketch_method(sketch_mouse_double_clicked, mouse_double_clicked),
+        "mouse_dragged": get_sketch_method(sketch_mouse_dragged, mouse_dragged),
+        "mouse_moved": get_sketch_method(sketch_mouse_moved, mouse_moved),
+        "mouse_pressed": get_sketch_method(sketch_mouse_pressed, mouse_pressed),
+        "mouse_released": get_sketch_method(sketch_mouse_released, mouse_released),
+        "mouse_wheel": get_sketch_method(sketch_mouse_wheel, mouse_wheel)
     }
 
     if renderer == "skia":
