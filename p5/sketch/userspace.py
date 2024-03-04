@@ -181,6 +181,9 @@ def run(
         sketch_mouse_released: Optional[Callable[[KeyEvent], None]] = None,
         sketch_mouse_wheel: Optional[Callable[[KeyEvent], None]] = None,
         frame_rate: int = 60,
+        window_xpos: int = 100,
+        window_ypos: int = 100,
+        window_title: str = "p5py",
         mode: str = "P2D",
         renderer: str = "vispy",
 ):
@@ -237,7 +240,7 @@ def run(
             raise NotImplementedError("3D mode is not available in skia")
         p5.sketch = SkiaSketch(setup_method, draw_method, handlers, frame_rate)
         preload_method()
-        p5.sketch.start()
+        p5.sketch.start(window_xpos, window_ypos, window_title)
     elif renderer == "vispy":
         import vispy
 

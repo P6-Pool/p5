@@ -1,3 +1,5 @@
+import glfw
+
 from p5.core import p5
 
 import skia
@@ -71,11 +73,12 @@ class SkiaSketch:
         glfw.terminate()
         self.context.abandonContext()
 
-    def glfw_window(self):
+    def glfw_window(self, xpos, ypos, title):
         if not glfw.init():
             raise RuntimeError("glfw.init() failed")
 
-        window = glfw.create_window(*self._size, "p5py", None, None)
+        window = glfw.create_window(*self._size, title, None, None)
+        glfw.set_window_pos(window, xpos, ypos)
         glfw.make_context_current(window)
         return window
 
@@ -146,8 +149,8 @@ class SkiaSketch:
                 event._update_builtins()
                 function(event)
 
-    def start(self):
-        self.window = self.glfw_window()
+    def start(self, xpos, ypos, title):
+        self.window = self.glfw_window(xpos, ypos, title)
         self.create_surface()
         self.assign_callbacks()
         p5.renderer.initialize_renderer(self.canvas, self.paint, self.path)
